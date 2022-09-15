@@ -3,7 +3,7 @@
 - OUTPUT: print index of third occurrence of given character within string
 */ 
 
-let string = "abcabcabc"
+let string = "abcabcabca"
 let char = "c"
 
 function thirdOcc(string, char) {
