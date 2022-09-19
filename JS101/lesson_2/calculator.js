@@ -40,6 +40,7 @@ while (!['add', 'subtract', 'multiply', 'divide'].includes(operator)) {
   operator = READLINE.question();
 }
 // Add development branch
+let test = "abc";
 // Perform operation
 let output;
 switch (operator) {
