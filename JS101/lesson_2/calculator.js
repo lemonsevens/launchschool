@@ -39,7 +39,7 @@ while (!['add', 'subtract', 'multiply', 'divide'].includes(operator)) {
   prompt('Must choose: add, subtract, multiply or divide');
   operator = READLINE.question();
 }
-
+// Add development branch
 // Perform operation
 let output;
 switch (operator) {
