@@ -21,19 +21,19 @@ let restartCalc;
 prompt(MESSAGES.welcome);
 
 do {
-  prompt(MESSAGES.first_num);
+  prompt(MESSAGES.firstNum);
   let num1 = READLINE.question();
 
   while (invalidNumber(num1)) {
-    prompt(MESSAGES.invalid_num);
+    prompt(MESSAGES.invalidNum);
     num1 = READLINE.question();
   }
 
-  prompt(MESSAGES.second_num);
+  prompt(MESSAGES.secondNum);
   let num2 = READLINE.question();
 
   while (invalidNumber(num2)) {
-    prompt(MESSAGES.invalid_num);
+    prompt(MESSAGES.invalidNum);
     num2 = READLINE.question();
   }
 
@@ -41,7 +41,7 @@ do {
   let operator = READLINE.question();
 
   while (!['add', 'subtract', 'multiply', 'divide'].includes(operator)) {
-    prompt(MESSAGES.invalid_operator);
+    prompt(MESSAGES.invalidOperator);
     operator = READLINE.question();
   }
 
@@ -67,11 +67,11 @@ do {
 
   prompt(`The result equals ${output}`);
 
-  prompt(MESSAGES.new_calculation)
+  prompt(MESSAGES.newCalculation)
   restartCalc = READLINE.question();
 
   while (!['y', 'n'].includes(restartCalc)) {
-    prompt(MESSAGES.invalid_new_calculation)
+    prompt(MESSAGES.invalidNewCalculation)
     restartCalc = READLINE.question();
   }
 

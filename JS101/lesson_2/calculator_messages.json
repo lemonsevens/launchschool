@@ -1,11 +1,11 @@
 {
   "welcome" : "Welcome to Calculator!",
-  "first_num" : "What's your first number?",
-  "second_num" : "What's your second number?",
-  "invalid_num" : "Hmm... that doesn't look like a valid number. Please try again:",
+  "firstNum" : "What's your first number?",
+  "secondNum" : "What's your second number?",
+  "invalidNum" : "Hmm... that doesn't look like a valid number. Please try again:",
   "operator" : "What kind of operation do you want to do? (add|subtract|multiply|divide)",
-  "invalid_operator" : "Must choose: add, subtract, multiply or divide",
-  "new_calculation" : "Do you want to do another calculation? (y/n)",
-  "invalid_new_calculation" : "Hmmmm... please answer with y/n:",
+  "invalidOperator" : "Must choose: add, subtract, multiply or divide",
+  "newCalculation" : "Do you want to do another calculation? (y/n)",
+  "invalidNewCalculation" : "Hmmmm... please answer with y/n:",
   "thanks" : "Thanks for using Calculator!"
 }
