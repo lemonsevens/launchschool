@@ -7,9 +7,15 @@
 
 const READLINE = require("readline-sync");
 const MESSAGES = require("./calculator_messages.json");
+const LANGUAGE = 'en';
 
-function prompt(message) {
+function prompt(key) {
+  let message = messages(key, LANGUAGE)
   console.log(`=> ${message}`);
+}
+
+function messages(message, lang) {
+  return MESSAGES[lang][message];
 }
 
 function invalidNumber(number) {
@@ -18,30 +24,30 @@ function invalidNumber(number) {
 
 let restartCalc;
 
-prompt(MESSAGES.welcome);
+prompt('welcome');
 
 do {
-  prompt(MESSAGES.firstNum);
+  prompt('firstNum');
   let num1 = READLINE.question();
 
   while (invalidNumber(num1)) {
-    prompt(MESSAGES.invalidNum);
+    prompt('invalidNum');
     num1 = READLINE.question();
   }
 
-  prompt(MESSAGES.secondNum);
+  prompt('secondNum');
   let num2 = READLINE.question();
 
   while (invalidNumber(num2)) {
-    prompt(MESSAGES.invalidNum);
+    prompt('invalidNum');
     num2 = READLINE.question();
   }
 
-  prompt(MESSAGES.operator);
+  prompt('operator');
   let operator = READLINE.question();
 
   while (!['add', 'subtract', 'multiply', 'divide'].includes(operator)) {
-    prompt(MESSAGES.invalidOperator);
+    prompt('invalidOperator');
     operator = READLINE.question();
   }
 
@@ -65,16 +71,16 @@ do {
       break;
   }
 
-  prompt(`The result equals ${output}`);
+  console.log(`=> The result equals ${output}`);
 
-  prompt(MESSAGES.newCalculation)
+  prompt('newCalculation')
   restartCalc = READLINE.question();
 
   while (!['y', 'n'].includes(restartCalc)) {
-    prompt(MESSAGES.invalidNewCalculation)
+    prompt('invalidNewCalculation')
     restartCalc = READLINE.question();
   }
 
 } while (restartCalc === 'y')
 
-prompt(MESSAGES.thanks)
+prompt('thanks')

@@ -1,4 +1,5 @@
-{
+{ 
+  "en" : {
   "welcome" : "Welcome to Calculator!",
   "firstNum" : "What's your first number?",
   "secondNum" : "What's your second number?",
@@ -8,4 +9,5 @@
   "newCalculation" : "Do you want to do another calculation? (y/n)",
   "invalidNewCalculation" : "Hmmmm... please answer with y/n:",
   "thanks" : "Thanks for using Calculator!"
+  }
 }
