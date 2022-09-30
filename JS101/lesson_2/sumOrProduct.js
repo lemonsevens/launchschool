@@ -22,7 +22,6 @@ for (let i = 1; i <= int; i++) {
   arr.push(i);
 }
 
-
 if (type === "s") {
   const initialValue = 0;
   const sumWithInitial = arr.reduce(
