@@ -4,21 +4,6 @@ Rock, Paper, Scissors Game
 INPUT: user chooses between rock, paper or scissors
 OUTPUT: winner between user vs cpu is displayed
 
-START
-SET - const choiceArr = ["rock", "paper", "scissor"]
-GET and SET - let userChoice = readline.question("Select rock (r), paper (p) or scissor (s): ")
-IF/ELSE - 
-  -- If user inputs 1, reassign userChoice to choiceArr[0] ("rock")
-  -- If user inputs 2, reassign userChoice to choiceArr[1] ("paper")
-  -- If user inputs 3, reassign userChoice to choiceArr[2] ("scissor")
-SUBPROCESS - randomly generate cpuChoice
-IF/ELSE - 
-  -- If player a chooses rock and player b chooses scissors, player a wins.
-  -- If player a chooses paper and player b chooses rock, player a wins.
-  -- If player a chooses scissors and player b chooses paper, player a wins.
-  -- If both players choose the same item, neither player wins. It's a tie.
-PRINT winner
-END
 */
 
 
@@ -29,39 +14,56 @@ function prompt(message) {
   console.log(`=> ${message}`);
 }
 
-while (true) {
-  prompt(`Choose one: ${VALID_CHOICES.join(', ')}`)
+function userChoice() {
   let userChoice = READLINE.question();
-
   while (!VALID_CHOICES.includes(userChoice)) {
     prompt(`That's not a valid choice, please choose: ${VALID_CHOICES.join(', ')}`)
     userChoice = READLINE.question();  
   }
+  return userChoice;
+}
 
+function cpuChoice() {
   let randomIndex = Math.floor(Math.random() * VALID_CHOICES.length);
   let cpuChoice = VALID_CHOICES[randomIndex];
+  return cpuChoice;
+}
 
-
+function winnerCalc(user, cpu) {
   let winner;
-  if ((userChoice === "rock" && cpuChoice === "scissors") || (userChoice === "paper" && cpuChoice === "rock") || (userChoice === "scissors" && cpuChoice === "paper")) {
+  if ((user === "rock" && cpu === "scissors") || (user === "paper" && cpu === "rock") || (user === "scissors" && cpu === "paper")) {
     winner = "User";
-  } else if (userChoice === cpuChoice) {
+  } else if (user === cpu) {
     winner = "Tie!";
   } else {
     winner = "CPU";
   }
+  return winner;
+}
 
-  prompt(`User: ${userChoice}`);
-  prompt(`CPU: ${cpuChoice}`);
-  prompt(`Winner: ${winner}`);
-
+function playAgain() {
   prompt("Do you want to play again? (y/n)");
   let playAgain = READLINE.question();
   while (playAgain[0] !== 'n' && playAgain[0] !== 'y') {
     prompt("Please enter 'y' if you want to play again, or 'n' if you do not want to play again: ");
     playAgain = READLINE.question();
   }
+  return playAgain;
+}
 
-  if (playAgain[0] !== 'y') break;
+while (true) {
+  prompt(`Choose one: ${VALID_CHOICES.join(', ')}`)
+
+  let userResult = userChoice();
+  let cpuResult = cpuChoice();
+  let winnerResult = winnerCalc(userResult, cpuResult);
+
+  prompt(`User: ${userResult}`);
+  prompt(`CPU: ${cpuResult}`);
+  prompt(`Winner: ${winnerResult}`);
+
+  let playAgainResult = playAgain();
+
+  if (playAgainResult[0] !== 'y') break;
 }
 
