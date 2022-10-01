@@ -7,7 +7,7 @@ OUTPUT: winner between user vs cpu is displayed
 */
 
 
-const READLINE = require("readline-sync");
+const readline = require("readline-sync");
 const VALID_CHOICES = ["rock", "paper", "scissors"];
 
 function prompt(message) {
@@ -15,10 +15,10 @@ function prompt(message) {
 }
 
 function userChoice() {
-  let userChoice = READLINE.question();
+  let userChoice = readline.question();
   while (!VALID_CHOICES.includes(userChoice)) {
     prompt(`That's not a valid choice, please choose: ${VALID_CHOICES.join(', ')}`)
-    userChoice = READLINE.question();  
+    userChoice = readline.question();  
   }
   return userChoice;
 }
@@ -43,15 +43,17 @@ function winnerCalc(user, cpu) {
 
 function playAgain() {
   prompt("Do you want to play again? (y/n)");
-  let playAgain = READLINE.question();
+  let playAgain = readline.question();
   while (playAgain[0] !== 'n' && playAgain[0] !== 'y') {
     prompt("Please enter 'y' if you want to play again, or 'n' if you do not want to play again: ");
-    playAgain = READLINE.question();
+    playAgain = readline.question();
   }
   return playAgain;
 }
 
-while (true) {
+let playAgainResult;
+
+do {
   prompt(`Choose one: ${VALID_CHOICES.join(', ')}`)
 
   let userResult = userChoice();
@@ -62,8 +64,8 @@ while (true) {
   prompt(`CPU: ${cpuResult}`);
   prompt(`Winner: ${winnerResult}`);
 
-  let playAgainResult = playAgain();
+  playAgainResult = playAgain();
+  console.clear();
 
-  if (playAgainResult[0] !== 'y') break;
-}
+} while (playAgainResult[0] !== 'n')
 
