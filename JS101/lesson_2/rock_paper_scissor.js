@@ -1,51 +1,73 @@
-/*
-Rock, Paper, Scissors Game
-
-INPUT: user chooses between rock, paper or scissors
-OUTPUT: winner between user vs cpu is displayed
-
-*/
-
-
 const readline = require("readline-sync");
-const VALID_CHOICES = ["rock", "paper", "scissors"];
+const MESSAGES = require("./rock_paper_scissor_messages.json")
+const CHOICES_AND_WINNERS = {
+  rock: { validChoices: ['r', 'rock'], defeats: ['scissors'] },
+  paper: { validChoices: ['p', 'paper'], defeats: ['rock'] },
+  scissors: { validChoices: ['s', 'scissors'], defeats: ['paper'] }
+}
+const CHOICES = Object.keys(CHOICES_AND_WINNERS);
+// const WINNING_SCORE = 3;
+// let userScore = 0;
+// let cpuScore = 0;
 
-function prompt(message) {
+function prompt(key) {
+  let message = messages(key)
   console.log(`=> ${message}`);
+}
+
+function messages(value) {
+  return MESSAGES[value];
+}
+
+function validate(str) {
+  let validated;
+  for (const key in CHOICES_AND_WINNERS) {
+    if (validated === undefined || validated === false) {
+        validated = (CHOICES_AND_WINNERS[key]['validChoices'].includes(str));
+    }
+  }
+  return validated;
 }
 
 function userChoice() {
   let userChoice = readline.question();
-  while (!VALID_CHOICES.includes(userChoice)) {
-    prompt(`That's not a valid choice, please choose: ${VALID_CHOICES.join(', ')}`)
+  while (validate(userChoice) === false) {
+    prompt('validChoiceError') + CHOICES.join(', ');
     userChoice = readline.question();  
+  }
+  if (userChoice === 'r') {
+    userChoice = 'rock';
+  } else if (userChoice === 'p') {
+    userChoice = 'paper';
+  } else if (userChoice === 's') {
+    userChoice = 'scissors';
   }
   return userChoice;
 }
 
 function cpuChoice() {
-  let randomIndex = Math.floor(Math.random() * VALID_CHOICES.length);
-  let cpuChoice = VALID_CHOICES[randomIndex];
+  let randomIndex = Math.floor(Math.random() * CHOICES.length);
+  let cpuChoice = CHOICES[randomIndex];
   return cpuChoice;
 }
 
 function winnerCalc(user, cpu) {
   let winner;
-  if ((user === "rock" && cpu === "scissors") || (user === "paper" && cpu === "rock") || (user === "scissors" && cpu === "paper")) {
-    winner = "User";
+  if (CHOICES_AND_WINNERS[user]['defeats'].includes(cpu)) {
+    winner = "user";
   } else if (user === cpu) {
-    winner = "Tie!";
+    winner = "tie";
   } else {
-    winner = "CPU";
+    winner = "cpu";
   }
   return winner;
 }
 
 function playAgain() {
-  prompt("Do you want to play again? (y/n)");
+  prompt('playAgain');
   let playAgain = readline.question();
   while (playAgain[0] !== 'n' && playAgain[0] !== 'y') {
-    prompt("Please enter 'y' if you want to play again, or 'n' if you do not want to play again: ");
+    prompt('playAgainError');
     playAgain = readline.question();
   }
   return playAgain;
@@ -54,15 +76,16 @@ function playAgain() {
 let playAgainResult;
 
 do {
-  prompt(`Choose one: ${VALID_CHOICES.join(', ')}`)
+  prompt('welcome');
+  prompt('makeChoice');
 
   let userResult = userChoice();
   let cpuResult = cpuChoice();
-  let winnerResult = winnerCalc(userResult, cpuResult);
+  let winnerCalcResult = winnerCalc(userResult, cpuResult);
 
-  prompt(`User: ${userResult}`);
-  prompt(`CPU: ${cpuResult}`);
-  prompt(`Winner: ${winnerResult}`);
+  console.log(`User: ${userResult}`);
+  console.log(`CPU: ${cpuResult}`);
+  console.log(`Winner: ${winnerCalcResult}`);
 
   playAgainResult = playAgain();
   console.clear();

@@ -1,25 +1,46 @@
-/* eslint-disable no-debugger */
-/* 
-INPUT: 
-  -- string with 0 to many words
-  -- separated with dashes or underscores
-  -- 
-OUTPUT: 
-  -- string in camelCase or PascalCase
-  -- first word only capitalized (PascalCase) if original is
-  -- if input is empty return empty string
-  
-*/
+const CHOICES_AND_WINNERS = {
+  rock: { validChoices: ['r', 'rock'], defeats: ['scissors'] },
+  paper: { validChoices: ['p', 'paper'], defeats: ['rock'] },
+  scissors: { validChoices: ['s', 'scissors'], defeats: ['paper'] }
+}
+const CHOICES = Object.keys(CHOICES_AND_WINNERS);
 
 
-function toCamelCase(str) {
-  let arr = str.split(/-|_/);
-  debugger;
-  console.log(arr);
-  for (let i = 1; i <= arr.length; i++) {
-    debugger
-    return arr[i][0].toUpperCase() + arr[i].slice('1');
+let userChoice = prompt();
+
+function validate(str) {
+  let validated;
+  for (const obj in CHOICES_AND_WINNERS) {
+    if (validated === undefined || validated === false) {
+        validated = (CHOICES_AND_WINNERS[obj]['validChoices'].includes(str));
+    }
   }
+  return validated;
 }
 
-console.log(toCamelCase("the-stealth-warrior"));
+
+
+while (validate(userChoice) === false) {
+  console.log("not valid");
+  userChoice = prompt();
+}
+
+
+
+
+
+
+
+// let cpuChoice = 'scissors';
+
+// if (CHOICES_AND_WINNERS[userChoice]['defeats'].includes(cpuChoice)) {
+//   console.log("you win!");
+// } else {
+//   console.log("you lose");
+// }
+// console.log(CHOICES_AND_WINNERS[userChoice]['validChoices'].includes(userChoice));
+
+// for (const obj in CHOICES_AND_WINNERS) {
+//   console.log(obj);
+//   console.log(CHOICES_AND_WINNERS[obj]['validChoices'].includes(userChoice));
+// }

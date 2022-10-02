@@ -1,0 +1,7 @@
+{
+  "welcome" : "Welcome to the Rock, Paper, Scissor game!",
+  "makeChoice" : "Please select rock (r), paper (p), or scissors (s): ",
+  "validChoiceError" : "That's not a valid choice, please choose: ",
+  "playAgain" : "Do you want to play again? (y or n)",
+  "playAgainError" : "Please enter 'y' if you want to play again, or 'n' if you do not want to play again: "
+}
