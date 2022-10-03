@@ -99,10 +99,13 @@ do {
     let cpuResult = cpuChoice();
     let winnerCalcResult = winnerCalc(userResult, cpuResult);
 
+    console.log(" ");
     console.log(`User: ${userResult}`);
     console.log(`CPU: ${cpuResult}`);
     console.log(`Won Round: ${winnerCalcResult}`);
     console.log(`Match Score: ${userScore} - ${cpuScore}`);
+    console.log(" ");
+
   } while (weGotAWinner() == false)
 
   console.log("-----------------------------");
@@ -110,9 +113,9 @@ do {
   console.log("-----------------------------");
 
   playAgainResult = playAgain();
+
   console.clear();
   userScore = 0;
   cpuScore = 0;
 
 } while (playAgainResult[0] !== 'n')
-
