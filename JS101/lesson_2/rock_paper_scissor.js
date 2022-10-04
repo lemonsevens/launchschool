@@ -26,31 +26,24 @@ function prompt(key, str) {
   }
 }
 
-function validate(str) {
-  let validated;
-  // eslint-disable-next-line no-restricted-syntax
-  for (const key in CHOICES_AND_WINNERS) {
-    if (validated === undefined || validated === false) {
-      validated = (CHOICES_AND_WINNERS[key].validChoices.includes(str));
+function validateChoice(str) {
+  for (let choice in CHOICES_AND_WINNERS) {
+    if (CHOICES_AND_WINNERS[choice].validChoices.includes(str)) {
+      return choice;
     }
   }
-  return validated;
+  return false;
 }
 
 // Core Functions
 function userChoice() {
+  prompt('makeChoice');
   let userChoice = readline.question().toLowerCase();
-  while (validate(userChoice) === false) {
+  while (!validateChoice(userChoice)) {
     prompt('validChoiceError', CHOICES.join(', '));
     userChoice = readline.question().toLowerCase();
   }
-  if (userChoice === 'r') {
-    userChoice = 'rock';
-  } else if (userChoice === 'p') {
-    userChoice = 'paper';
-  } else if (userChoice === 's') {
-    userChoice = 'scissors';
-  }
+  userChoice = validateChoice(userChoice);
   return userChoice;
 }
 
@@ -62,7 +55,7 @@ function cpuChoice() {
 
 function winnerCalc(user, cpu) {
   let winner;
-  if (CHOICES_AND_WINNERS[user].defeats.includes(cpu)) {
+  if (CHOICES_AND_WINNERS[user]['defeats'].includes(cpu)) {
     winner = 'User';
     userScore += 1;
   } else if (user === cpu) {
@@ -84,14 +77,35 @@ function weGotAWinner() {
   return false;
 }
 
+function displayWinner() {
+  console.log('-----------------------------');
+  console.log(weGotAWinner());
+  console.log('-----------------------------');
+}
+
 function playAgain() {
   prompt('playAgain');
   let playAgain = readline.question().toLowerCase();
-  while (playAgain[0] !== 'n' && playAgain[0] !== 'y') {
+  while (playAgain !== 'n' && playAgain !== 'y' && playAgain !== 'yes' && playAgain !== 'no') {
     prompt('playAgainError');
     playAgain = readline.question().toLowerCase();
   }
   return playAgain;
+}
+
+function updateScore(user, cpu, winner) {
+  console.log(' ');
+  console.log(`User: ${user}`);
+  console.log(`CPU: ${cpu}`);
+  console.log(`Won Round: ${winner}`);
+  console.log(`Match Score: ${userScore} - ${cpuScore}`);
+  console.log(' ');
+}
+
+function resetGame() {
+  console.clear();
+  userScore = 0;
+  cpuScore = 0;
 }
 
 // Core Program
@@ -100,27 +114,18 @@ let playAgainResult;
 do {
   prompt('welcome');
   do {
-    prompt('makeChoice');
-
     const userResult = userChoice();
     const cpuResult = cpuChoice();
     const winnerCalcResult = winnerCalc(userResult, cpuResult);
 
-    console.log(' ');
-    console.log(`User: ${userResult}`);
-    console.log(`CPU: ${cpuResult}`);
-    console.log(`Won Round: ${winnerCalcResult}`);
-    console.log(`Match Score: ${userScore} - ${cpuScore}`);
-    console.log(' ');
+    updateScore(userResult, cpuResult, winnerCalcResult);
+
   } while (weGotAWinner() === false);
 
-  console.log('-----------------------------');
-  console.log(weGotAWinner());
-  console.log('-----------------------------');
+  displayWinner();
 
   playAgainResult = playAgain();
 
-  console.clear();
-  userScore = 0;
-  cpuScore = 0;
+  resetGame();
+
 } while (playAgainResult[0] !== 'n');
