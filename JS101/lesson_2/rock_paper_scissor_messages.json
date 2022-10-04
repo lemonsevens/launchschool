@@ -1,5 +1,5 @@
 {
-  "welcome" : "Welcome to the Rock, Paper, Scissor game!",
+  "welcome" : "Welcome to the Rock, Paper, Scissor game! You versus the CPU! First one to 3 wins!",
   "makeChoice" : "Please select rock (r), paper (p), or scissors (s): ",
   "validChoiceError" : "That's not a valid choice, please choose: ",
   "playAgain" : "Do you want to play again? (y or n)",
