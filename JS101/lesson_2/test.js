@@ -1,12 +1,29 @@
-function foo(number) {
-  return number;
+// function factors(number) {
+//   let divisor = number;
+//   let factors = [];
+//   do {
+//     if (number % divisor === 0) {
+//       factors.push(number / divisor);
+//     }
+//     divisor -= 1;
+//   } while (divisor !== 0);
+//   return factors;
+// }
+
+// factors(20);
+
+function factorsTwo(number) {
+  let divisor = number;
+  let factors = [];
+  if (number !== 0 && number > 0) {
+    for (let i = number; i > 0; i--) {
+      if (number % divisor === 0) {
+        factors.push(number / divisor);
+      }
+      divisor -= 1;
+    }
+  }
+  return factors;
 }
 
-let number = 1;
-let newNumber = foo(number);
-console.log(number);    // 1
-console.log(newNumber); // 1
-
-number = 3;
-console.log(number);    // 3
-console.log(newNumber); // 1
+factorsTwo(0);
