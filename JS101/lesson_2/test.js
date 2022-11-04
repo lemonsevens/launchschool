@@ -1,29 +1,8 @@
-// function factors(number) {
-//   let divisor = number;
-//   let factors = [];
-//   do {
-//     if (number % divisor === 0) {
-//       factors.push(number / divisor);
-//     }
-//     divisor -= 1;
-//   } while (divisor !== 0);
-//   return factors;
-// }
+Wondering how this works:
 
-// factors(20);
+let arr = [1, 2, 3, 4, 5, 6, 7];
 
-function factorsTwo(number) {
-  let divisor = number;
-  let factors = [];
-  if (number !== 0 && number > 0) {
-    for (let i = number; i > 0; i--) {
-      if (number % divisor === 0) {
-        factors.push(number / divisor);
-      }
-      divisor -= 1;
-    }
-  }
-  return factors;
-}
-
-factorsTwo(0);
+console.log(arr.forEach(elem => {
+  arr.splice(0, 1);
+  console.log(elem);
+})); // 1, 3, 5, 7
