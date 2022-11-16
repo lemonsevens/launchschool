@@ -34,6 +34,22 @@ function prompt(message) {
   console.log(`=> ${message}`);
 }
 
+function joinOr(array, delimiter, lastDelimiter) {
+  let result = "";
+
+  for (let i = 0; i < array.length; i++) {
+    result += array[i];
+
+    if (i === array.length - 2) {
+      result += lastDelimiter;
+    } else if (i !== array.length - 1) {
+      result += delimiter;
+    }
+  }
+
+  return result;
+}
+
 function displayBoard(board) {
   console.clear();
 
@@ -73,14 +89,14 @@ function userSelect(board) {
 
   while (true) {
     userMark = readline.question(
-      `Enter a square (${emptySquares(board).join(", ")}): `
+      `Enter a square (${joinOr(emptySquares(board), ", ", " or ")}): `
     );
 
     if (emptySquares(board).includes(userMark)) break;
 
     prompt("Sorry that's not a valid choice!");
     userMark = readline.question(
-      `Choose another square (${emptySquares(board).join(", ")}): `
+      `Choose another square (${joinOr(emptySquares(board), ", ", " or ")}): `
     );
   }
 
@@ -171,3 +187,40 @@ while (true) {
 }
 
 prompt("Thanks for playing Tic Tac Toe!");
+
+/*
+DESCRIPTION:
+ - Write a function that replaces the last delimiter in a string returned from .join()
+
+INPUT: array
+OUTPUT: string
+RULES:
+  - takes in array, delimiter and last delimiter
+    - ([1, 2, 3], ', ', 'or')
+  - delimiter can be any string character
+  - last delimiter can be any string
+
+EXAMPLES:
+joinOr([1, 2, 3]);               // => "1, 2, or 3"
+joinOr([1, 2, 3], '; ');         // => "1; 2; or 3"
+joinOr([1, 2, 3], ', ', 'and');  // => "1, 2, and 3"
+joinOr([]);                      // => ""
+joinOr([5]);                     // => "5"
+joinOr([1, 2]);                  // => "1 or 2"
+
+DATA STRUCTURE:
+  array -> string 
+
+ALGORITHM:
+  - take in parameters
+    - (array, delimiter, lastDelimiter)
+  - SET result = '';
+  - WHILE index < array.length
+    - add array[index] to result
+    - IF next to last element in array
+      - add lastDelimiter to result
+    - ELSE IF not last element in array
+      - add delimiter to result
+  - return result
+
+*/
