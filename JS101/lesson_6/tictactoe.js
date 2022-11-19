@@ -24,26 +24,86 @@ ALGORITHM:
     - If yes, go to #1
     - Goodbye!
 */
+/*
+DESCRIPTION:
+ - Write a function that replaces the last delimiter in a string returned from .join()
+
+INPUT: array
+OUTPUT: string
+RULES:
+  - takes in array, delimiter and last delimiter
+    - ([1, 2, 3], ', ', 'or')
+  - delimiter can be any string character
+  - last delimiter can be any string
+
+EXAMPLES:
+joinOr([1, 2, 3]);               // => "1, 2, or 3"
+joinOr([1, 2, 3], '; ');         // => "1; 2; or 3"
+joinOr([1, 2, 3], ', ', 'and');  // => "1, 2, and 3"
+joinOr([]);                      // => ""
+joinOr([5]);                     // => "5"
+joinOr([1, 2]);                  // => "1 or 2"
+
+DATA STRUCTURE:
+  array -> string 
+
+ALGORITHM:
+  - take in parameters
+    - (array, delimiter, lastDelimiter)
+  - SET result = '';
+  - WHILE index < array.length
+    - add array[index] to result
+    - IF next to last element in array
+      - add lastDelimiter to result
+    - ELSE IF not last element in array
+      - add delimiter to result
+  - return result
+
+*/
+/*
+DESCRIPTION: 
+  - Keep track of how many times the player and computer each win, and report the scores after each game. The first player to win 5 games wins the overall match (a series of 2 or more games). The score should reset to 0 for each player when beginning a new match. Don't use any global variables. However, you may want to use a global constant to represent the number of games needed to win the match.
+
+INPUT: string
+OUTPUT: string
+RULES:
+  - print score after each game
+  - first to 5 wins
+  - score resets to 0 when starting new match
+  - no global variables except:
+    - games in a match
+
+ALGORITHM:
+  - SET user counter
+  - SET cpu counter
+  - 
+*/
 
 const readline = require("readline-sync");
 const EMPTY_SPACE = " ";
 const USER_MARK = "X";
 const CPU_MARK = "O";
+const WIN_MATCH = 5;
 
 function prompt(message) {
   console.log(`=> ${message}`);
 }
 
-function joinOr(array, delimiter, lastDelimiter) {
+function joinOr(array, delimiter = ', ', lastDelimiter = 'or') {
   let result = "";
+
+  if (array.length === 0) return '';
+  if (array.length === 1) return String(array);
 
   for (let i = 0; i < array.length; i++) {
     result += array[i];
 
-    if (i === array.length - 2) {
-      result += lastDelimiter;
-    } else if (i !== array.length - 1) {
-      result += delimiter;
+    if (i === array.length - 2 && array.length !== 2) {
+      result += `${delimiter}${lastDelimiter} `;
+    } else if (i !== array.length - 1 && array.length !== 2) {
+      result += `${delimiter} `;
+    } else if (i === array.length - 2 && array.length === 2) {
+      result += ` ${lastDelimiter} `
     }
   }
 
@@ -89,14 +149,14 @@ function userSelect(board) {
 
   while (true) {
     userMark = readline.question(
-      `Enter a square (${joinOr(emptySquares(board), ", ", " or ")}): `
+      `Enter a square (${joinOr(emptySquares(board))}): `
     );
 
     if (emptySquares(board).includes(userMark)) break;
 
     prompt("Sorry that's not a valid choice!");
     userMark = readline.question(
-      `Choose another square (${joinOr(emptySquares(board), ", ", " or ")}): `
+      `Choose another square (${joinOr(emptySquares(board))}): `
     );
   }
 
@@ -161,66 +221,33 @@ function isTie(board) {
 // Main Program
 
 while (true) {
-  let board = initializeBoard();
+    let board = initializeBoard();
 
-  while (true) {
+    // single gameplay
+    while (true) {
+      displayBoard(board);
+
+      userSelect(board);
+      if (someoneWon(board) || isTie(board)) break;
+
+      cpuSelect(board);
+      if (someoneWon(board) || isTie(board)) break;
+    }
+
+    // display board after win or tie
     displayBoard(board);
 
-    userSelect(board);
-    if (someoneWon(board) || isTie(board)) break;
+    // print winner or tie message
+    if (someoneWon(board)) {
+      prompt(`${detectWinner(board)} won!`);
+    } else {
+      prompt("It's a tie!");
+    }
 
-    cpuSelect(board);
-    if (someoneWon(board) || isTie(board)) break;
-  }
-
-  displayBoard(board);
-
-  if (someoneWon(board)) {
-    prompt(`${detectWinner(board)} won!`);
-  } else {
-    prompt("It's a tie!");
-  }
-
+  // ask to play again
   prompt("Play again? (y or n)");
   let answer = readline.question().toLowerCase()[0];
   if (answer !== "y") break;
 }
 
 prompt("Thanks for playing Tic Tac Toe!");
-
-/*
-DESCRIPTION:
- - Write a function that replaces the last delimiter in a string returned from .join()
-
-INPUT: array
-OUTPUT: string
-RULES:
-  - takes in array, delimiter and last delimiter
-    - ([1, 2, 3], ', ', 'or')
-  - delimiter can be any string character
-  - last delimiter can be any string
-
-EXAMPLES:
-joinOr([1, 2, 3]);               // => "1, 2, or 3"
-joinOr([1, 2, 3], '; ');         // => "1; 2; or 3"
-joinOr([1, 2, 3], ', ', 'and');  // => "1, 2, and 3"
-joinOr([]);                      // => ""
-joinOr([5]);                     // => "5"
-joinOr([1, 2]);                  // => "1 or 2"
-
-DATA STRUCTURE:
-  array -> string 
-
-ALGORITHM:
-  - take in parameters
-    - (array, delimiter, lastDelimiter)
-  - SET result = '';
-  - WHILE index < array.length
-    - add array[index] to result
-    - IF next to last element in array
-      - add lastDelimiter to result
-    - ELSE IF not last element in array
-      - add delimiter to result
-  - return result
-
-*/
