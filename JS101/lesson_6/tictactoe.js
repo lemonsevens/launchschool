@@ -1,98 +1,62 @@
-/*
-DESCRIPTION:
-  - Tic Tac Toe is a 2-player game played on a 3x3 grid called the board. Each player takes a turn and marks a square on the board. The first player to get 3 squares in a row–horizontal, vertical, or diagonal–wins. If all 9 squares are filled and neither player has 3 in a row, the game is a tie.
-
-RULES:
-  - two players (user vs cpu)
-  - three-by-three grid
-  - X and O marks
-  - winner = three consecutive marks in a horizontal, vertical or diagonal row
-  - tie = all 9 squares filled with no winner
-
-
-
-ALGORITHM:
-  High-Level:
-    - Display the initial empty 3x3 board.
-    - Ask the user to mark a square.
-    - Computer marks a square.
-    - Display the updated board state.
-    - If it's a winning board, display the winner.
-    - If the board is full, display tie.
-    - If neither player won and the board is not full, go to #2
-    - Play again?
-    - If yes, go to #1
-    - Goodbye!
-*/
-/*
-DESCRIPTION:
- - Write a function that replaces the last delimiter in a string returned from .join()
-
-INPUT: array
-OUTPUT: string
-RULES:
-  - takes in array, delimiter and last delimiter
-    - ([1, 2, 3], ', ', 'or')
-  - delimiter can be any string character
-  - last delimiter can be any string
-
-EXAMPLES:
-joinOr([1, 2, 3]);               // => "1, 2, or 3"
-joinOr([1, 2, 3], '; ');         // => "1; 2; or 3"
-joinOr([1, 2, 3], ', ', 'and');  // => "1, 2, and 3"
-joinOr([]);                      // => ""
-joinOr([5]);                     // => "5"
-joinOr([1, 2]);                  // => "1 or 2"
-
-DATA STRUCTURE:
-  array -> string 
-
-ALGORITHM:
-  - take in parameters
-    - (array, delimiter, lastDelimiter)
-  - SET result = '';
-  - WHILE index < array.length
-    - add array[index] to result
-    - IF next to last element in array
-      - add lastDelimiter to result
-    - ELSE IF not last element in array
-      - add delimiter to result
-  - return result
-
-*/
-/*
-DESCRIPTION: 
-  - Keep track of how many times the player and computer each win, and report the scores after each game. The first player to win 5 games wins the overall match (a series of 2 or more games). The score should reset to 0 for each player when beginning a new match. Don't use any global variables. However, you may want to use a global constant to represent the number of games needed to win the match.
-
-INPUT: string
-OUTPUT: string
-RULES:
-  - print score after each game
-  - first to 5 wins
-  - score resets to 0 when starting new match
-  - no global variables except:
-    - games in a match
-
-ALGORITHM:
-  - SET user counter
-  - SET cpu counter
-  - 
-*/
-
 const readline = require("readline-sync");
+
 const EMPTY_SPACE = " ";
 const USER_MARK = "X";
 const CPU_MARK = "O";
 const WIN_MATCH = 5;
+const WINNING_LINES = [
+  [1, 2, 3],
+  [4, 5, 6],
+  [7, 8, 9], // rows
+  [1, 4, 7],
+  [2, 5, 8],
+  [3, 6, 9], // columns
+  [1, 5, 9],
+  [3, 5, 7], // diagonals
+];
+
+/**********************
+ *
+ * AI CPU DEFENSE
+ *
+ * DESCRIPTION:
+ *  defend the 3rd square if user is about to win, otherwise pick random square
+ *
+ * INPUT: array, object
+ * OUTPUT: object
+ * RULES:
+ *  - only defend if user is about to win
+ *  - otherwise pick random square
+ *
+ * ALGORITHM:
+ *  - Get array of empty squares
+ *  - Loop over WINNING_LINES
+ *    - Set sq1, sq2, sq3 to elements of each subArr
+ *    - IF two of the squares are USER_MARK
+ *      - Place CPU_MARK in empty square
+ *    - ELSE place CPU_MARK in random empty square
+ *
+ * *******************/
+
+let userScore = 0;
+let cpuScore = 0;
+let lastWinner = "";
+
+/**********************
+ *
+ * Helper Functions
+ *
+ **********************/
 
 function prompt(message) {
   console.log(`=> ${message}`);
 }
 
-function joinOr(array, delimiter = ', ', lastDelimiter = 'or') {
+// *************************************************   refactor to switch
+function joinOr(array, delimiter = ", ", lastDelimiter = "or") {
   let result = "";
 
-  if (array.length === 0) return '';
+  if (array.length === 0) return "";
   if (array.length === 1) return String(array);
 
   for (let i = 0; i < array.length; i++) {
@@ -103,18 +67,53 @@ function joinOr(array, delimiter = ', ', lastDelimiter = 'or') {
     } else if (i !== array.length - 1 && array.length !== 2) {
       result += `${delimiter} `;
     } else if (i === array.length - 2 && array.length === 2) {
-      result += ` ${lastDelimiter} `
+      result += ` ${lastDelimiter} `;
     }
   }
 
   return result;
 }
 
-function displayBoard(board) {
-  console.clear();
+function findAtRiskSquare(line, board, marker) {
+  let markersInLine = line.map((square) => board[square]); // [' ', 'O', ' '], ['X', 'X', ' ']
 
-  console.log(`You are ${USER_MARK} and CPU is ${CPU_MARK}`);
+  if (markersInLine.filter((val) => val === marker).length === 2) {
+    let unusedSquare = line.find((square) => board[square] === EMPTY_SPACE);
+    if (unusedSquare !== undefined) {
+      return unusedSquare;
+    }
+  }
 
+  return null;
+}
+
+function findEmptySquares(board) {
+  // return an array of keys associated with an empty space
+  return Object.keys(board).filter((key) => board[key] === EMPTY_SPACE);
+}
+
+function cpuAICheck(board, marker) {
+  let square;
+
+  for (let idx = 0; idx < WINNING_LINES.length; idx++) {
+    let line = WINNING_LINES[idx];
+    square = findAtRiskSquare(line, board, marker);
+    if (square) break;
+  }
+
+  return square;
+}
+
+function someoneWon(board) {
+  return !!detectWinner(board);
+}
+
+function isTie(board) {
+  // check if board is full
+  return findEmptySquares(board).length === 0;
+}
+
+function boardStructure(board) {
   console.log("");
   console.log(`     |     |`);
   console.log(`  ${board["1"]}  |  ${board["2"]}  |  ${board["3"]}`);
@@ -130,7 +129,14 @@ function displayBoard(board) {
   console.log("");
 }
 
+/**********************
+ *
+ * Main Functions
+ *
+ **********************/
+
 function initializeBoard() {
+  // initialize an object with 9 properties, each associated with an empty space
   let board = {};
 
   for (let square = 1; square <= 9; square++) {
@@ -140,23 +146,26 @@ function initializeBoard() {
   return board;
 }
 
-function emptySquares(board) {
-  return Object.keys(board).filter((key) => board[key] === EMPTY_SPACE);
+function displayBoard(board) {
+  console.clear();
+
+  console.log(`You are ${USER_MARK} and CPU is ${CPU_MARK}`);
+  if (userScore !== 0 || cpuScore !== 0) {
+    prompt(`${lastWinner} won last round!`);
+  }
+  prompt(`Match score is: User ${userScore} and CPU ${cpuScore}`);
+  boardStructure(board);
 }
 
 function userSelect(board) {
-  let userMark;
+  let userMark = readline.question(
+    `Enter a square (${joinOr(findEmptySquares(board))}): `
+  );
 
-  while (true) {
-    userMark = readline.question(
-      `Enter a square (${joinOr(emptySquares(board))}): `
-    );
-
-    if (emptySquares(board).includes(userMark)) break;
-
+  while (!findEmptySquares(board).includes(userMark)) {
     prompt("Sorry that's not a valid choice!");
     userMark = readline.question(
-      `Choose another square (${joinOr(emptySquares(board))}): `
+      `Choose another square (${joinOr(findEmptySquares(board))}): `
     );
   }
 
@@ -166,33 +175,30 @@ function userSelect(board) {
 }
 
 function cpuSelect(board) {
-  let randNum;
+  let square;
 
-  randNum = Math.floor(Math.random() * emptySquares(board).length);
+  // offense AI
+  square = cpuAICheck(board, CPU_MARK);
 
-  let square = emptySquares(board)[randNum];
+  // defense AI
+  if (!square) {
+    square = cpuAICheck(board, USER_MARK);
+  }
+
+  // pick square 5 if open
+  if (!square && board[5] === " ") square = 5;
+
+  // random pick
+  if (!square) {
+    let randNum = Math.floor(Math.random() * findEmptySquares(board).length);
+    square = findEmptySquares(board)[randNum];
+  }
 
   board[square] = CPU_MARK;
-
-  return board;
-}
-
-function someoneWon(board) {
-  return !!detectWinner(board);
 }
 
 function detectWinner(board) {
-  const WINNING_LINES = [
-    [1, 2, 3],
-    [4, 5, 6],
-    [7, 8, 9],
-    [1, 4, 7],
-    [2, 5, 8],
-    [3, 6, 9],
-    [1, 5, 9],
-    [3, 5, 7],
-  ];
-
+  // check board for winning lines
   for (let line = 0; line < WINNING_LINES.length; line++) {
     let [sq1, sq2, sq3] = WINNING_LINES[line];
 
@@ -214,40 +220,55 @@ function detectWinner(board) {
   return null;
 }
 
-function isTie(board) {
-  return emptySquares(board).length === 0;
+function chooseSquare(board, currentPlayer) {
+  if (currentPlayer === "user") return userSelect(board);
+  if (currentPlayer === "cpu") return cpuSelect(board);
+
+  return null;
 }
 
-// Main Program
+function alternatePlayer(currentPlayer) {
+  if (currentPlayer === "user") return "cpu";
+  if (currentPlayer === "cpu") return "user";
+
+  return null;
+}
+
+/*************************
+ Main Program
+*************************/
+let currentPlayer = readline.question("Who goes first (user, cpu, random): ");
 
 while (true) {
-    let board = initializeBoard();
+  // single game loop
+  let board = initializeBoard();
 
-    // single gameplay
-    while (true) {
-      displayBoard(board);
-
-      userSelect(board);
-      if (someoneWon(board) || isTie(board)) break;
-
-      cpuSelect(board);
-      if (someoneWon(board) || isTie(board)) break;
-    }
-
-    // display board after win or tie
+  // single game next turn loop
+  while (true) {
     displayBoard(board);
+    chooseSquare(board, currentPlayer);
+    currentPlayer = alternatePlayer(currentPlayer);
+    if (someoneWon(board) || isTie(board)) break;
+  }
 
-    // print winner or tie message
-    if (someoneWon(board)) {
-      prompt(`${detectWinner(board)} won!`);
-    } else {
-      prompt("It's a tie!");
-    }
+  if (detectWinner(board) === "User") {
+    userScore += 1;
+    lastWinner = `User`;
+  }
+  if (detectWinner(board) === "CPU") {
+    cpuScore += 1;
+    lastWinner = `CPU`;
+  }
 
-  // ask to play again
-  prompt("Play again? (y or n)");
-  let answer = readline.question().toLowerCase()[0];
-  if (answer !== "y") break;
+  displayBoard(board);
+
+  if (userScore === WIN_MATCH || cpuScore === WIN_MATCH) {
+    prompt(`${detectWinner(board)} won the match!`);
+    prompt("Play again? (y or n)");
+    let answer = readline.question().toLowerCase()[0];
+    [userScore, cpuScore] = [0, 0];
+    if (answer !== "y") break;
+  }
 }
 
 prompt("Thanks for playing Tic Tac Toe!");
