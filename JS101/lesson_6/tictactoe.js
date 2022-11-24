@@ -261,6 +261,7 @@ while (true) {
   }
 
   displayBoard(board);
+  currentPlayer = alternatePlayer(currentPlayer);
 
   if (userScore === WIN_MATCH || cpuScore === WIN_MATCH) {
     prompt(`${detectWinner(board)} won the match!`);
