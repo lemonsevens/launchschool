@@ -145,23 +145,26 @@ function hitOrStay() {
 }
 
 function playersTurn(playersHand, dealersHand, deck) {
-  let choice;
+  displayCards(playersHand, dealersHand);
+
   while (true) {
-    displayCards(playersHand, dealersHand);
-    choice = hitOrStay();
+    let choice = hitOrStay();
 
     if (choice === "h" && !busted(playersHand)) {
       drawCard(playersHand, deck);
-    } else {
+      displayCards(playersHand, dealersHand);
+    } else if (busted(playersHand)) {
       break;
     }
+
+    if (busted(playersHand)) break;
   }
 }
 
-function dealersTurn(dealersHand, dealersTotal) {
+function dealersTurn(dealersHand, dealersTotal, deck) {
   while (true) {
     if (dealersTotal >= MAX_DEALER_HIT_VALUE) break;
-    drawCard(dealersHand);
+    drawCard(dealersHand, deck);
     displayCards();
   }
 }
@@ -302,8 +305,8 @@ while (true) {
 
     playersTurn(playersHand, dealersHand, deck);
     playersTotal = sumTotal(playersHand);
-
-    if (!busted(playersHand)) dealersTurn(dealersHand, dealersTotal);
+    debugger;
+    if (!busted(playersHand)) dealersTurn(dealersHand, dealersTotal, deck);
     dealersTotal = sumTotal(dealersHand);
 
     displayGameWinner(playersTotal, dealersTotal);
