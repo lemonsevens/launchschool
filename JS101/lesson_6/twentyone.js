@@ -50,14 +50,23 @@ ALGORITHM:
   -
   - Initialize deck
   - Shuffle deck
-  - Deal two cards to each player
+  - Deal two cards to player and one to dealer
+  - Display hands
   - Player's turn
+    - ask hit or stay?
+      - if hit, deal new card
+    - display player and dealer hand
     - repeat until bust or stay
-  - Dealers turn
+    - if bust, end game
+    - if stay, continue to dealers turn
+    - Dealers turn
+    - deal new card
+    - display player and dealer hand
     - repeat until total >= 17 or bust
-  - Compare cards and declare winner
+  - Sum Totals and display winner
 */
 const readline = require("readline-sync");
+
 let deck = [];
 let dealersCards = [];
 let playersCards = [];
@@ -79,7 +88,6 @@ function initializeDeck(deck) {
   }
 
   shuffle(deck);
-
   return deck;
 }
 
@@ -109,18 +117,25 @@ function sumTotal(cards) {
   return sumTotal;
 }
 
-function displayCards(player, cards) {
-  let result = `${player}: `;
-
-  for (let i = 0; i < cards.length; i++) {
-    result += cards[i].join("");
-    if (i < cards.length - 1) result += ", ";
+function displayCards() {
+  let playersResult = ``;
+  let dealersResult = ``;
+  
+  for (let i = 0; i < playersCards.length; i++) {
+    playersResult += playersCards[i].join("");
+    if (i < playersCards.length - 1) playersResult += ", ";
   }
 
-  return result;
+  for (let i = 0; i < dealersCards.length; i++) {
+    dealersResult += dealersCards[i].join("");
+    if (i < dealersCards.length - 1) dealersResult += ", ";
+  }
+
+  console.log(`Player: ${playersResult} \nDealer: ${dealersResult}`);
 }
 
 function playersTurn() {
+  // let hitOrStay;
   let hitOrStay = readline.question("Hit? (y or n) ");
   if (hitOrStay === "y") {
     drawCard(playersCards);
@@ -132,20 +147,42 @@ function playersTurn() {
   return hitOrStay;
 }
 
+/*
+ALGORITHM:
+  - Initialize deck
+    - Shuffle deck
+  - Deal two cards to player and one to dealer
+  - Display hands
+  - Player's turn
+    - ask hit or stay?
+      - if hit, deal new card
+    - display player and dealer hand
+    - repeat until bust or stay
+    - if bust, end game
+    - if stay, continue to dealers turn
+    - Dealers turn
+    - deal new card
+    - display player and dealer hand
+    - repeat until total >= 17 or bust
+  - Sum Totals and display winner
+*/
+
 initializeDeck(deck);
 
 drawCard(playersCards);
 drawCard(playersCards);
 drawCard(dealersCards);
 
-while (true) {
-  console.clear();
-  console.log(displayCards("Player", playersCards));
-  console.log(displayCards("Dealer", dealersCards));
-  if (sumTotal(playersCards) > 21) {
-    console.log(`You Bust!`);
-    console.log(sumTotal(playersCards));
-    break;
-  }
-  if (playersTurn() === "Stay") break;
-}
+displayCards();
+
+playersTurn();
+
+// while (true) {
+//   console.clear();
+//   if (sumTotal(playersCards) > 21) {
+//     console.log(`You Bust!`);
+//     console.log(sumTotal(playersCards));
+//     break;
+//   }
+//   if (playersTurn() === "Stay") break;
+// }
