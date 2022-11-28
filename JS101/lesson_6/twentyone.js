@@ -1,81 +1,53 @@
 /*
-DESCRIPTION:
-  Create a game of twenty one.
-
-RULES:
-  - Deck:
-    - 52 cards
-      - 4 suits (hearts, diamonds, spades, clubs)
-        - 13 values (2 - 10, jack, queen, king, ace)
-  - Goal:
-    - Player closest to 21 wins
-    - if you go over: you bust (lose)
-  - Setup:
-    - Two players:
-      - dealer
-      - player
-    - Initial draw of two cards each
-    - Players can see only one (top) card of other player
-  - Card Values:
-    - 2-10 = card value
-    - jack, queen and king = 10
-    - ace = 1 or 11
-      - determined by total hand value (so not to bust)
-  - Player Turn:
-    - Non-dealer always goes first.
-    - Hit or stay
-    - Player keeps going (hitting) until bust or until they stay
-  - Dealer Turn:
-    - After player stays, it's dealers turn
-    - Must hit until >= 17
-    - If dealer busts, player wins
-  - Comparing Cards:
-    - When both player and dealer stay, compare total value of cards.
-    - Highest value wins.
-
-
-DATA STRUCTURE:
-  - Deck:         object = {
-                    suit:   ['H', 'D', 'S', 'C'],
-                    values: ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
-                  }
-                  ->
-                  array = [ ['H', 'A'], ['H', '2'], ['H', '3'], ... ['D', 'A'], ['D', '2'], ...]
-
-  - Player hand: array = [ ['H', 'A'], ['D', '9'] ]
-  - Dealer hand: array = [ ['S', '4'], ['C', '6'], ['D', '7'] ]
-
-
-ALGORITHM:
-  -
   - Initialize deck
-  - Shuffle deck
-  - Deal two cards to player and one to dealer
-  - Display hands
+  - Deal two cards each to player and dealer
+  - Display hands, concealing second dealer card
   - Player's turn
     - ask hit or stay?
       - if hit, deal new card
-    - display player and dealer hand
-    - repeat until bust or stay
-    - if bust, end game
-    - if stay, continue to dealers turn
-    - Dealers turn
-    - deal new card
-    - display player and dealer hand
-    - repeat until total >= 17 or bust
-  - Sum Totals and display winner
-*/
+        - display player and dealer hand
+        - repeat until bust or stay
+      - if bust, end game
+      - if stay, continue to dealers turn
+  - Dealers turn
+    - if total is < 17
+      - deal new card
+      - display player and dealer hand
+      - repeat until total >= 17 or bust
+  - Detect and display winner
+  */
+
 const readline = require("readline-sync");
 
-let deck = [];
-let dealersCards = [];
-let playersCards = [];
+const MAX_HAND_VALUE = 21;
+const MAX_DEALER_HIT_VALUE = 17;
+const ACE_VALUE = 11;
+const ACE_CORRECTION_VALUE = 10;
+const FACE_CARD_VALUE = 10;
 
-function initializeDeck(deck) {
-  let deckObj = {
+const MATCH_WIN_VALUE = 5;
+
+let playerMatchScore = 0;
+let dealerMatchScore = 0;
+
+function greeting() {
+  console.clear();
+  console.log(
+    `Welcome to TwentyOne! Here are the rules:\n\n1. To win, get as close to ${MAX_HAND_VALUE} without going over. \n\n2. If you go over ${MAX_HAND_VALUE}, you bust and you lose. \n\n3. Both player and dealer each start with a hand of two cards. \n\n4. The player goes first and can only see one of the dealer's cards. \n\n5. Choose to "hit" for another card or "stay" to make it the dealer's turn. \n\n6. The first player to ${MATCH_WIN_VALUE} games wins the match.\n\n`
+  );
+  console.log("Press any key to continue...");
+
+  readline.keyIn();
+  console.clear();
+}
+
+function initializeDeck() {
+  const deckObj = {
     suit: ["H", "D", "S", "C"],
     values: ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"],
   };
+
+  let deck = [];
 
   for (let suitIndex = 0; suitIndex < deckObj["suit"].length; suitIndex++) {
     for (
@@ -86,9 +58,9 @@ function initializeDeck(deck) {
       deck.push([deckObj["suit"][suitIndex], deckObj["values"][valuesIndex]]);
     }
   }
+  debugger;
 
-  shuffle(deck);
-  return deck;
+  return shuffle(deck);
 }
 
 function shuffle(deck) {
@@ -96,57 +68,186 @@ function shuffle(deck) {
     let otherIndex = Math.floor(Math.random() * (index + 1)); // 0 to index
     [deck[index], deck[otherIndex]] = [deck[otherIndex], deck[index]]; // swap elements
   }
+
+  return deck;
 }
 
-const drawCard = (player) => player.push(deck.pop());
+function drawCard(hand, deck) {
+  hand.push(deck.pop());
+}
+
+function initialDraw(playersHand, dealersHand, deck) {
+  drawCard(playersHand, deck);
+  drawCard(dealersHand, deck);
+  drawCard(playersHand, deck);
+  drawCard(dealersHand, deck);
+}
 
 function sumTotal(cards) {
+  // cards = [['D', 'J'], ['C', '7'], ...]
+  let values = cards.map((value) => value[1]);
   let sumTotal = 0;
 
-  for (let i = 0; i < cards.length; i++) {
-    if (cards[i][1] === "A") {
-      sumTotal += 11;
-    } else if (["K", "Q", "J"].includes(cards[i][1])) {
-      sumTotal += 10;
+  for (let idx = 0; idx < cards.length; idx++) {
+    let value = values[idx];
+    if (value === "A") {
+      sumTotal += ACE_VALUE;
+    } else if (["K", "Q", "J"].includes(value)) {
+      sumTotal += FACE_CARD_VALUE;
     } else {
-      sumTotal += Number(cards[i][1]);
+      sumTotal += Number(value);
     }
-    if (cards[i][1] === "A" && sumTotal > 21) sumTotal -= 10;
+
+    if (value === "A" && sumTotal > MAX_HAND_VALUE) {
+      sumTotal -= ACE_CORRECTION_VALUE;
+    }
   }
 
   return sumTotal;
 }
 
-function displayCards() {
+function busted(cards) {
+  return sumTotal(cards) > MAX_HAND_VALUE;
+}
+
+function displayCards(playersHand, dealersHand) {
+  console.clear();
   let playersResult = ``;
   let dealersResult = ``;
-  
-  for (let i = 0; i < playersCards.length; i++) {
-    playersResult += playersCards[i].join("");
-    if (i < playersCards.length - 1) playersResult += ", ";
+
+  for (let idx = 0; idx < playersHand.length; idx++) {
+    playersResult += playersHand[idx].join("");
+    if (idx < playersHand.length - 1) playersResult += ", ";
   }
 
-  for (let i = 0; i < dealersCards.length; i++) {
-    dealersResult += dealersCards[i].join("");
-    if (i < dealersCards.length - 1) dealersResult += ", ";
+  for (let idx = 0; idx < dealersHand.length; idx++) {
+    dealersResult += dealersHand[idx].join("");
+    if (idx < dealersHand.length - 1) dealersResult += ", ";
   }
 
   console.log(`Player: ${playersResult} \nDealer: ${dealersResult}`);
 }
 
-function playersTurn() {
-  // let hitOrStay;
-  let hitOrStay = readline.question("Hit? (y or n) ");
-  if (hitOrStay === "y") {
-    drawCard(playersCards);
-    hitOrStay = "Hit";
-  } else {
-    hitOrStay = "Stay";
+function hitOrStay() {
+  let answer = readline
+    .question("Would you like to (h)it or (s)tay? ")
+    .toLowerCase();
+
+  while (answer !== "h" && answer !== "s") {
+    answer = readline
+      .question(
+        "That's an invalid response. Would you like to (h)it or (s)tay? "
+      )
+      .toLowerCase();
   }
 
-  return hitOrStay;
+  return answer;
 }
 
+function playersTurn(playersHand, dealersHand, deck) {
+  let choice;
+  while (true) {
+    displayCards(playersHand, dealersHand);
+    choice = hitOrStay();
+
+    if (choice === "h" && !busted(playersHand)) {
+      drawCard(playersHand, deck);
+    } else {
+      break;
+    }
+  }
+}
+
+function dealersTurn(dealersHand, dealersTotal) {
+  while (true) {
+    if (dealersTotal >= MAX_DEALER_HIT_VALUE) break;
+    drawCard(dealersHand);
+    displayCards();
+  }
+}
+
+function detectGameWinner(playersTotal, dealersTotal) {
+  if (playersTotal > MAX_HAND_VALUE) {
+    return "PLAYER_BUSTED";
+  } else if (dealersTotal > MAX_HAND_VALUE) {
+    return "DEALER_BUSTED";
+  } else if (playersTotal > dealersTotal) {
+    return "PLAYER";
+  } else if (playersTotal < dealersTotal) {
+    return "DEALER";
+  } else {
+    return "TIE";
+  }
+}
+
+function displayGameWinner(playersTotal, dealersTotal) {
+  let result = detectGameWinner(playersTotal, dealersTotal);
+
+  switch (result) {
+    case "PLAYER_BUSTED":
+      console.log("You bust. Dealer wins this game.");
+      break;
+    case "DEALER_BUSTED":
+      console.log("Dealer bust. You win this game.");
+      break;
+    case "PLAYER":
+      console.log("You win this game.");
+      break;
+    case "DEALER":
+      console.log("Dealer wins this game.");
+      break;
+    case "TIE":
+      console.log("Tie game.");
+  }
+}
+
+function incrementMatchScore(playerMatchScore, dealerMatchScore) {
+  if (
+    detectGameWinner() === "DEALER_BUSTED" ||
+    detectGameWinner() === "PLAYER"
+  ) {
+    playerMatchScore += 1;
+    return playerMatchScore;
+  } else if (
+    detectGameWinner() === "PLAYER_BUSTED" ||
+    detectGameWinner() === "DEALER"
+  ) {
+    dealerMatchScore += 1;
+    return dealerMatchScore;
+  }
+
+  return null;
+}
+
+function displayMatchScore(playerMatchScore, dealerMatchScore) {
+  console.log("--------------------------------");
+  console.log(`| Player: ${playerMatchScore} | ${dealerMatchScore} |`);
+  console.log("--------------------------------");
+}
+
+function detectMatchWinner(playerMatchScore, dealerMatchScore) {
+  if (playerMatchScore >= MATCH_WIN_VALUE) {
+    return "Player";
+  } else if (dealerMatchScore >= MATCH_WIN_VALUE) {
+    return "Dealer";
+  }
+
+  return null;
+}
+
+function displayMatchWinner() {
+  let winner = detectMatchWinner(playerMatchScore, dealerMatchScore);
+  console.log(`${winner} has won the match!`);
+}
+
+function resetGame(playersHand, playersTotal, dealersHand, dealersTotal) {
+  playersHand = [];
+  dealersHand = [];
+  playersTotal = 0;
+  dealersTotal = 0;
+
+  return [playersHand, playersTotal, dealersHand, dealersTotal];
+}
 /*
 ALGORITHM:
   - Initialize deck
@@ -160,29 +261,60 @@ ALGORITHM:
     - repeat until bust or stay
     - if bust, end game
     - if stay, continue to dealers turn
-    - Dealers turn
+  - Dealers turn
     - deal new card
     - display player and dealer hand
     - repeat until total >= 17 or bust
   - Sum Totals and display winner
 */
 
-initializeDeck(deck);
+/**********************
+ * greeting
+ * loop (match)
+ * initialize deck
+ * loop (game)
+ * draw cards
+ * display cards
+ * players turn
+ * dealers turn
+ * determine winner
+ * display game results
+ * display match results
+ * loop (game)
+ * display match winner
+ * ask to play again
+ * loop (match)
+ */
 
-drawCard(playersCards);
-drawCard(playersCards);
-drawCard(dealersCards);
+// greeting();
 
-displayCards();
+while (true) {
+  let deck = initializeDeck();
 
-playersTurn();
+  while (true) {
+    let playersHand = [];
+    let dealersHand = [];
+    console.clear();
+    initialDraw(playersHand, dealersHand, deck);
 
-// while (true) {
-//   console.clear();
-//   if (sumTotal(playersCards) > 21) {
-//     console.log(`You Bust!`);
-//     console.log(sumTotal(playersCards));
-//     break;
-//   }
-//   if (playersTurn() === "Stay") break;
-// }
+    let playersTotal = sumTotal(playersHand);
+    let dealersTotal = sumTotal(dealersHand);
+
+    playersTurn(playersHand, dealersHand, deck);
+    playersTotal = sumTotal(playersHand);
+
+    if (!busted(playersHand)) dealersTurn(dealersHand, dealersTotal);
+    dealersTotal = sumTotal(dealersHand);
+
+    displayGameWinner(playersTotal, dealersTotal);
+
+    // incrementMatchScore(playerMatchScore, dealerMatchScore);
+    // displayMatchScore(playerMatchScore, dealerMatchScore);
+
+    // if (detectMatchWinner(playerMatchScore, dealerMatchScore)) {
+    //   displayMatchWinner();
+    // }
+    dealersHand = [];
+    playersHand = [];
+  }
+}
