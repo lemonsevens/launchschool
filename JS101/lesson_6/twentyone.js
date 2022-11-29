@@ -88,7 +88,7 @@ function sumTotal(cards) {
   let values = cards.map((value) => value[1]);
   let sumTotal = 0;
 
-  for (let idx = 0; idx < cards.length; idx++) {
+  for (let idx = 0; idx < values.length; idx++) {
     let value = values[idx];
     if (value === "A") {
       sumTotal += ACE_VALUE;
@@ -98,9 +98,9 @@ function sumTotal(cards) {
       sumTotal += Number(value);
     }
 
-    if (value === "A" && sumTotal > MAX_HAND_VALUE) {
-      sumTotal -= ACE_CORRECTION_VALUE;
-    }
+    values.filter(value => value === 'A').forEach(_ => {
+      if (sumTotal > MAX_HAND_VALUE) sumTotal -= ACE_CORRECTION_VALUE;
+    })
   }
 
   return sumTotal;
@@ -110,7 +110,7 @@ function busted(cards) {
   return sumTotal(cards) > MAX_HAND_VALUE;
 }
 
-function displayCards(playersHand, dealersHand) {
+function displayCards(playersHand, dealersHand, conceal) {
   console.clear();
   let playersResult = ``;
   let dealersResult = ``;
@@ -120,11 +120,14 @@ function displayCards(playersHand, dealersHand) {
     if (idx < playersHand.length - 1) playersResult += ", ";
   }
 
-  for (let idx = 0; idx < dealersHand.length; idx++) {
-    dealersResult += dealersHand[idx].join("");
-    if (idx < dealersHand.length - 1) dealersResult += ", ";
+  if (conceal) {
+    dealersResult = `(??), ${dealersHand[1].join("")}`
+  } else {
+    for (let idx = 0; idx < dealersHand.length; idx++) {
+      dealersResult += dealersHand[idx].join("");
+      if (idx < dealersHand.length - 1) dealersResult += ", ";
+    }
   }
-
   console.log(`Player: ${playersResult} \nDealer: ${dealersResult}`);
 }
 
@@ -145,27 +148,29 @@ function hitOrStay() {
 }
 
 function playersTurn(playersHand, dealersHand, deck) {
-  displayCards(playersHand, dealersHand);
+  displayCards(playersHand, dealersHand, true);
 
   while (true) {
     let choice = hitOrStay();
 
     if (choice === "h" && !busted(playersHand)) {
       drawCard(playersHand, deck);
-      displayCards(playersHand, dealersHand);
-    } else if (busted(playersHand)) {
+      displayCards(playersHand, dealersHand, true);
+    } else if (choice === "s" || busted(playersHand)) {
       break;
     }
 
     if (busted(playersHand)) break;
   }
+
 }
 
-function dealersTurn(dealersHand, dealersTotal, deck) {
+function dealersTurn(playersHand, dealersHand, deck) {
   while (true) {
+    dealersTotal = sumTotal(dealersHand);
     if (dealersTotal >= MAX_DEALER_HIT_VALUE) break;
     drawCard(dealersHand, deck);
-    displayCards();
+    displayCards(playersHand, dealersHand);
   }
 }
 
@@ -178,53 +183,56 @@ function detectGameWinner(playersTotal, dealersTotal) {
     return "PLAYER";
   } else if (playersTotal < dealersTotal) {
     return "DEALER";
-  } else {
+  } else if (playersTotal === dealersTotal) {
     return "TIE";
+  } else {
+    return null;
   }
 }
 
-function displayGameWinner(playersTotal, dealersTotal) {
+function displayGameWinner(playersHand, dealersHand, playersTotal, dealersTotal) {
   let result = detectGameWinner(playersTotal, dealersTotal);
 
   switch (result) {
     case "PLAYER_BUSTED":
+      displayCards(playersHand, dealersHand);
       console.log("You bust. Dealer wins this game.");
       break;
     case "DEALER_BUSTED":
+      displayCards(playersHand, dealersHand);
       console.log("Dealer bust. You win this game.");
       break;
     case "PLAYER":
+      displayCards(playersHand, dealersHand);
       console.log("You win this game.");
       break;
     case "DEALER":
+      displayCards(playersHand, dealersHand);
       console.log("Dealer wins this game.");
       break;
     case "TIE":
+      displayCards(playersHand, dealersHand);
       console.log("Tie game.");
   }
 }
 
-function incrementMatchScore(playerMatchScore, dealerMatchScore) {
+function incrementMatchScore(playersTotal, dealersTotal) {
   if (
-    detectGameWinner() === "DEALER_BUSTED" ||
-    detectGameWinner() === "PLAYER"
+    detectGameWinner(playersTotal, dealersTotal) === "DEALER_BUSTED" ||
+    detectGameWinner(playersTotal, dealersTotal) === "PLAYER"
   ) {
     playerMatchScore += 1;
-    return playerMatchScore;
   } else if (
-    detectGameWinner() === "PLAYER_BUSTED" ||
-    detectGameWinner() === "DEALER"
+    detectGameWinner(playersTotal, dealersTotal) === "PLAYER_BUSTED" ||
+    detectGameWinner(playersTotal, dealersTotal) === "DEALER"
   ) {
     dealerMatchScore += 1;
-    return dealerMatchScore;
   }
-
-  return null;
 }
 
 function displayMatchScore(playerMatchScore, dealerMatchScore) {
   console.log("--------------------------------");
-  console.log(`| Player: ${playerMatchScore} | ${dealerMatchScore} |`);
+  console.log(`| Player: ${playerMatchScore} | Dealer: ${dealerMatchScore} |`);
   console.log("--------------------------------");
 }
 
@@ -240,17 +248,11 @@ function detectMatchWinner(playerMatchScore, dealerMatchScore) {
 
 function displayMatchWinner() {
   let winner = detectMatchWinner(playerMatchScore, dealerMatchScore);
+  console.log("****************************");
   console.log(`${winner} has won the match!`);
+  console.log("****************************");
 }
 
-function resetGame(playersHand, playersTotal, dealersHand, dealersTotal) {
-  playersHand = [];
-  dealersHand = [];
-  playersTotal = 0;
-  dealersTotal = 0;
-
-  return [playersHand, playersTotal, dealersHand, dealersTotal];
-}
 /*
 ALGORITHM:
   - Initialize deck
@@ -289,7 +291,7 @@ ALGORITHM:
  * loop (match)
  */
 
-// greeting();
+greeting();
 
 while (true) {
   let deck = initializeDeck();
@@ -300,24 +302,35 @@ while (true) {
     console.clear();
     initialDraw(playersHand, dealersHand, deck);
 
+    playersTurn(playersHand, dealersHand, deck);
     let playersTotal = sumTotal(playersHand);
+
+    if (!busted(playersHand)) dealersTurn(playersHand, dealersHand, deck);
     let dealersTotal = sumTotal(dealersHand);
 
-    playersTurn(playersHand, dealersHand, deck);
-    playersTotal = sumTotal(playersHand);
-    debugger;
-    if (!busted(playersHand)) dealersTurn(dealersHand, dealersTotal, deck);
-    dealersTotal = sumTotal(dealersHand);
+    displayGameWinner(playersHand, dealersHand, playersTotal, dealersTotal);
 
-    displayGameWinner(playersTotal, dealersTotal);
+    incrementMatchScore(playersTotal, dealersTotal);
+    displayMatchScore(playerMatchScore, dealerMatchScore);
 
-    // incrementMatchScore(playerMatchScore, dealerMatchScore);
-    // displayMatchScore(playerMatchScore, dealerMatchScore);
+    if (detectMatchWinner(playerMatchScore, dealerMatchScore)) {
+      displayMatchWinner();
+      break;
+    }
 
-    // if (detectMatchWinner(playerMatchScore, dealerMatchScore)) {
-    //   displayMatchWinner();
-    // }
+    console.log("Press any key for next game...");
+    readline.keyIn();
+
     dealersHand = [];
     playersHand = [];
   }
+  
+  dealersTotal = 0;
+  playersTotal = 0;
+  dealersHand = [];
+  playersHand = [];
+  playerMatchScore = 0;
+  dealerMatchScore = 0;
+  console.log("Press any key for play another match...");
+  readline.keyIn();
 }
