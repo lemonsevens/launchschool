@@ -1,22 +1,3 @@
-/*
-  - Initialize deck
-  - Deal two cards each to player and dealer
-  - Display hands, concealing second dealer card
-  - Player's turn
-    - ask hit or stay?
-      - if hit, deal new card
-        - display player and dealer hand
-        - repeat until bust or stay
-      - if bust, end game
-      - if stay, continue to dealers turn
-  - Dealers turn
-    - if total is < 17
-      - deal new card
-      - display player and dealer hand
-      - repeat until total >= 17 or bust
-  - Detect and display winner
-  */
-
 const readline = require("readline-sync");
 
 const MAX_HAND_VALUE = 21;
@@ -24,7 +5,6 @@ const MAX_DEALER_HIT_VALUE = 17;
 const ACE_VALUE = 11;
 const ACE_CORRECTION_VALUE = 10;
 const FACE_CARD_VALUE = 10;
-
 const MATCH_WIN_VALUE = 5;
 
 let playerMatchScore = 0;
@@ -32,8 +12,9 @@ let dealerMatchScore = 0;
 
 function greeting() {
   console.clear();
+  console.log("**********************************************************************");
   console.log(
-    `Welcome to TwentyOne! Here are the rules:\n\n1. To win, get as close to ${MAX_HAND_VALUE} without going over. \n\n2. If you go over ${MAX_HAND_VALUE}, you bust and you lose. \n\n3. Both player and dealer each start with a hand of two cards. \n\n4. The player goes first and can only see one of the dealer's cards. \n\n5. Choose to "hit" for another card or "stay" to make it the dealer's turn. \n\n6. The first player to ${MATCH_WIN_VALUE} games wins the match.\n\n`
+    `Welcome to TwentyOne! \n\nHere are the rules:\n\n1. To win, get as close to ${MAX_HAND_VALUE} without going over. \n\n2. If you go over ${MAX_HAND_VALUE}, you bust and you lose. \n\n3. Both player and dealer each start with a hand of two cards. \n\n4. The player goes first and can only see one of the dealer's cards. \n\n5. Choose to "hit" for another card or "stay" to make it the dealer's turn. \n\n6. The first player to ${MATCH_WIN_VALUE} games wins the match.\n\n`
   );
   console.log("Press any key to continue...");
 
@@ -112,6 +93,7 @@ function busted(cards) {
 
 function displayCards(playersHand, dealersHand, conceal) {
   console.clear();
+
   let playersResult = ``;
   let dealersResult = ``;
 
@@ -127,8 +109,10 @@ function displayCards(playersHand, dealersHand, conceal) {
       dealersResult += dealersHand[idx].join("");
       if (idx < dealersHand.length - 1) dealersResult += ", ";
     }
+
     dealersResult += ` (\x1b[32m${sumTotal(dealersHand)}\x1b[0m)`;
   }
+
   console.log(`Player: ${playersResult} (\x1b[32m${sumTotal(playersHand)}\x1b[0m) \nDealer: ${dealersResult}`);
 }
 
@@ -170,7 +154,9 @@ function playersTurn(playersHand, dealersHand, deck) {
 function dealersTurn(playersHand, dealersHand, deck) {
   while (true) {
     let dealersTotal = sumTotal(dealersHand);
+
     if (dealersTotal >= MAX_DEALER_HIT_VALUE) break;
+
     drawCard(dealersHand, deck);
     displayCards(playersHand, dealersHand);
   }
@@ -269,59 +255,24 @@ function playAnotherMatch() {
   }
 
   if (answer === "y") return "Yes";
+
   return null;
 }
 
-/*
-ALGORITHM:
-  - Initialize deck
-    - Shuffle deck
-  - Deal two cards to player and one to dealer
-  - Display hands
-  - Player's turn
-    - ask hit or stay?
-      - if hit, deal new card
-    - display player and dealer hand
-    - repeat until bust or stay
-    - if bust, end game
-    - if stay, continue to dealers turn
-  - Dealers turn
-    - deal new card
-    - display player and dealer hand
-    - repeat until total >= 17 or bust
-  - Sum Totals and display winner
-*/
-
-/**********************
- * greeting
- * loop (match)
- * initialize deck
- * loop (game)
- * draw cards
- * display cards
- * players turn
- * dealers turn
- * determine winner
- * display game results
- * display match results
- * loop (game)
- * display match winner
- * ask to play again
- * loop (match)
- */
+// Main Program
 
 greeting();
 
-while (true) {
+while (true) { // match loop
   let deck = initializeDeck();
 
-  while (true) {
+  while (true) { // game loop
+    console.clear();
     let playersHand = [];
     let dealersHand = [];
     let dealersTotal = 0;
     let playersTotal = 0;
 
-    console.clear();
     initialDraw(playersHand, dealersHand, deck);
 
     playersTurn(playersHand, dealersHand, deck);
@@ -333,6 +284,7 @@ while (true) {
     displayGameWinner(playersHand, dealersHand, playersTotal, dealersTotal);
 
     incrementMatchScore(playersTotal, dealersTotal);
+
     displayMatchScore(playerMatchScore, dealerMatchScore);
 
     if (detectMatchWinner(playerMatchScore, dealerMatchScore)) {
@@ -342,9 +294,6 @@ while (true) {
 
     console.log("Press any key for next game...");
     readline.keyIn();
-
-    dealersHand = [];
-    playersHand = [];
   }
 
   if (!playAnotherMatch()) break;
