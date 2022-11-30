@@ -25,7 +25,7 @@ function greeting() {
 function initializeDeck() {
   const deckObj = {
     suit: ["H", "D", "S", "C"],
-    values: ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"],
+    values: ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
   };
 
   let deck = [];
@@ -87,7 +87,6 @@ function sumTotal(cards) {
 }
 
 function busted(cards) {
-  debugger;
   return sumTotal(cards) > MAX_HAND_VALUE;
 }
 
