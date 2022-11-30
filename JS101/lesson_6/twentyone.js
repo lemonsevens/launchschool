@@ -58,7 +58,6 @@ function initializeDeck() {
       deck.push([deckObj["suit"][suitIndex], deckObj["values"][valuesIndex]]);
     }
   }
-  debugger;
 
   return shuffle(deck);
 }
@@ -90,23 +89,24 @@ function sumTotal(cards) {
 
   for (let idx = 0; idx < values.length; idx++) {
     let value = values[idx];
-    if (value === "A") {
-      sumTotal += ACE_VALUE;
-    } else if (["K", "Q", "J"].includes(value)) {
+    if (["K", "Q", "J"].includes(value)) {
       sumTotal += FACE_CARD_VALUE;
+    } else if (value === "A") {
+      sumTotal += ACE_VALUE;
     } else {
       sumTotal += Number(value);
     }
-
-    values.filter(value => value === 'A').forEach(_ => {
-      if (sumTotal > MAX_HAND_VALUE) sumTotal -= ACE_CORRECTION_VALUE;
-    })
   }
+
+  values.filter(value => value === 'A').forEach(_ => {
+    if (sumTotal > MAX_HAND_VALUE) sumTotal -= ACE_CORRECTION_VALUE;
+  });
 
   return sumTotal;
 }
 
 function busted(cards) {
+  debugger;
   return sumTotal(cards) > MAX_HAND_VALUE;
 }
 
@@ -121,14 +121,15 @@ function displayCards(playersHand, dealersHand, conceal) {
   }
 
   if (conceal) {
-    dealersResult = `(??), ${dealersHand[1].join("")}`
+    dealersResult = `(??), ${dealersHand[1].join("")}`;
   } else {
     for (let idx = 0; idx < dealersHand.length; idx++) {
       dealersResult += dealersHand[idx].join("");
       if (idx < dealersHand.length - 1) dealersResult += ", ";
     }
+    dealersResult += ` (\x1b[32m${sumTotal(dealersHand)}\x1b[0m)`;
   }
-  console.log(`Player: ${playersResult} \nDealer: ${dealersResult}`);
+  console.log(`Player: ${playersResult} (\x1b[32m${sumTotal(playersHand)}\x1b[0m) \nDealer: ${dealersResult}`);
 }
 
 function hitOrStay() {
@@ -153,6 +154,7 @@ function playersTurn(playersHand, dealersHand, deck) {
   while (true) {
     let choice = hitOrStay();
 
+    debugger;
     if (choice === "h" && !busted(playersHand)) {
       drawCard(playersHand, deck);
       displayCards(playersHand, dealersHand, true);
@@ -167,7 +169,7 @@ function playersTurn(playersHand, dealersHand, deck) {
 
 function dealersTurn(playersHand, dealersHand, deck) {
   while (true) {
-    dealersTotal = sumTotal(dealersHand);
+    let dealersTotal = sumTotal(dealersHand);
     if (dealersTotal >= MAX_DEALER_HIT_VALUE) break;
     drawCard(dealersHand, deck);
     displayCards(playersHand, dealersHand);
@@ -190,29 +192,29 @@ function detectGameWinner(playersTotal, dealersTotal) {
   }
 }
 
-function displayGameWinner(playersHand, dealersHand, playersTotal, dealersTotal) {
-  let result = detectGameWinner(playersTotal, dealersTotal);
+function displayGameWinnerHelper(pHand, dHand, message) {
+  displayCards(pHand, dHand);
+  console.log(`${message}`);
+}
+
+function displayGameWinner(pHand, dHand, pTotal, dTotal) {
+  let result = detectGameWinner(pTotal, dTotal);
 
   switch (result) {
     case "PLAYER_BUSTED":
-      displayCards(playersHand, dealersHand);
-      console.log("You bust. Dealer wins this game.");
+      displayGameWinnerHelper(pHand, dHand, "You bust. Dealer wins this game.");
       break;
     case "DEALER_BUSTED":
-      displayCards(playersHand, dealersHand);
-      console.log("Dealer bust. You win this game.");
+      displayGameWinnerHelper(pHand, dHand, "Dealer bust. You win this game.");
       break;
     case "PLAYER":
-      displayCards(playersHand, dealersHand);
-      console.log("You win this game.");
+      displayGameWinnerHelper(pHand, dHand, "You win this game.");
       break;
     case "DEALER":
-      displayCards(playersHand, dealersHand);
-      console.log("Dealer wins this game.");
+      displayGameWinnerHelper(pHand, dHand, "Dealer wins this game.");
       break;
     case "TIE":
-      displayCards(playersHand, dealersHand);
-      console.log("Tie game.");
+      displayGameWinnerHelper(pHand, dHand, "Tie game.");
   }
 }
 
@@ -231,9 +233,9 @@ function incrementMatchScore(playersTotal, dealersTotal) {
 }
 
 function displayMatchScore(playerMatchScore, dealerMatchScore) {
-  console.log("--------------------------------");
-  console.log(`| Player: ${playerMatchScore} | Dealer: ${dealerMatchScore} |`);
-  console.log("--------------------------------");
+  console.log("-------------------------------");
+  console.log(`|   Player: ${playerMatchScore}  |  Dealer: ${dealerMatchScore}   |`);
+  console.log("-------------------------------");
 }
 
 function detectMatchWinner(playerMatchScore, dealerMatchScore) {
@@ -251,6 +253,23 @@ function displayMatchWinner() {
   console.log("****************************");
   console.log(`${winner} has won the match!`);
   console.log("****************************");
+}
+
+function playAnotherMatch() {
+  let answer = readline
+    .question("Would you like to play another match? (y or n) ")
+    .toLowerCase();
+
+  while (answer !== "y" && answer !== "n") {
+    answer = readline
+      .question(
+        "That's an invalid response. Would you like to play another match? (y or n) "
+      )
+      .toLowerCase();
+  }
+
+  if (answer === "y") return "Yes";
+  return null;
 }
 
 /*
@@ -299,14 +318,17 @@ while (true) {
   while (true) {
     let playersHand = [];
     let dealersHand = [];
+    let dealersTotal = 0;
+    let playersTotal = 0;
+
     console.clear();
     initialDraw(playersHand, dealersHand, deck);
 
     playersTurn(playersHand, dealersHand, deck);
-    let playersTotal = sumTotal(playersHand);
+    playersTotal = sumTotal(playersHand);
 
     if (!busted(playersHand)) dealersTurn(playersHand, dealersHand, deck);
-    let dealersTotal = sumTotal(dealersHand);
+    dealersTotal = sumTotal(dealersHand);
 
     displayGameWinner(playersHand, dealersHand, playersTotal, dealersTotal);
 
@@ -324,13 +346,15 @@ while (true) {
     dealersHand = [];
     playersHand = [];
   }
-  
-  dealersTotal = 0;
-  playersTotal = 0;
-  dealersHand = [];
-  playersHand = [];
+
+  if (!playAnotherMatch()) break;
+
   playerMatchScore = 0;
   dealerMatchScore = 0;
-  console.log("Press any key for play another match...");
-  readline.keyIn();
 }
+
+console.clear();
+console.log(`Thanks for playing TwentyOne!`);
+console.log("Press any key to exit...");
+readline.keyIn();
+console.clear();
