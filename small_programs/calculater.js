@@ -6,16 +6,29 @@
 
 console.log("Welcome to the Command Line Calculater!");
 
-const readline = require('readline-sync');
+const readline = require("readline-sync");
 
 let userInputFirstNum = readline.question("Enter first number: ");
 let userInputSecondNum = readline.question("Enter second number: ");
 let userInputOperationType = readline.question("Enter operation type: ");
 
-
-
 function calculaterProcess(firstNum, secondNum, operationType) {
-
+  switch (operationType) {
+    case "+":
+      return firstNum + secondNum;
+    case "-":
+      return firstNum - secondNum;
+    case "*":
+      return firstNum * secondNum;
+    case "/":
+      return firstNum / secondNum;
+  }
 }
 
-console.log(`Your calculation result is: ${calculaterProcess(userInputFirstNum, userInputSecondNum, userInputOperationType)}`);
+console.log(
+  `Your calculation result is: ${calculaterProcess(
+    userInputFirstNum,
+    userInputSecondNum,
+    userInputOperationType
+  )}`
+);
